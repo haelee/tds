@@ -1,22 +1,40 @@
-## Transition Map
-- 1st unit: state from
-- 2nd unit: state to
+## (Internal) Transition Function
+```c
+typedef struct _tdsf_Transition
+{
+	tdsd_State	StateFrom;
+	tdsd_State	StateTo;
+}
+tdsf_Transition;
+```
 
-## Instruction Format
-- 1st unit: Instruction
-- 2nd unit: OP1 (1st operand)
-- 3rd unit: OP2 (2nd operand)
+## External Transition Function
+```c
+typedef struct _tdsf_ExternalTransition
+{
+	tdsf_Transition	Transition;
+	tdss_Statement	ElapsedTimeStatement;
+	tdss_Statement	eXternalEventStatement;
+}
+tdsf_ExternalTransition;
+```
 
-## Instructions
-- TDSI_UC: Transition upon any event occurs.
-- TDSI_EQ: Transition if the given value equal to OP1.
+## Output Function
+```c
+typedef struct _tdsf_Output
+{
+	tdsd_State	State;
+	tdsd_Event	OutputEvent;
+}
+tdsf_Output;
+```
 
-## To be implemented
-- TDSI_ST1: smaller than operand 1
-- TDSI_SE1: smaller than or equal to operand 1
-- TDSI_LE1: larger than or equal to operand 1
-- TDSI_LT1: larger than operand 1
-- TDSI_ST2: smaller than operand 2
-- TDSI_SE2: smaller than or equal to operand 2
-- TDSI_LE2: larger than or equal to operand 2
-- TDSI_LT2: larger than operand 2
+## Time Advance Function
+```c
+typedef struct _tdsf_TimeAdvance
+{
+	tdsd_State	State;
+	tdsd_Time	Time;
+}
+tdsf_TimeAdvance;
+```
