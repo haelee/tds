@@ -20,7 +20,7 @@ typedef tdsTime (* tdsTimeAdvanceFunction) (tdsAtomicModel *);
 
 typedef struct _tdsAtomicModel
 {
-	tdsStateVariables StateVariables;
+	tdsStateVariable * StateVariables;
 	tdsInitializationFunction InitializationFunction;
 	tdsExternalTransitionFunction ExternalTransitionFunction;
 	tdsInternalTransitionFunction InternalTransitionFunction;

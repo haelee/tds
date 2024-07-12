@@ -5,8 +5,16 @@
 #include <stdbool.h>
 #include <malloc.h>
 
-typedef void * tdsStateVariables;
-typedef double tdsTime;
+typedef uint64_t tdsInteger;
+typedef double tdsReal;
+typedef tdsReal tdsTime;
 typedef void * tdsEvent;
+
+typedef union _tdsStateVariable
+{
+    tdsInteger Integer;
+    tdsReal Real;
+}
+tdsStateVariable;
 
 #define tdsInfinite DBL_MAX;
