@@ -130,13 +130,10 @@
     <ClCompile Include="tds.c" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="sample.h" />
     <ClInclude Include="tds.h" />
-    <ClInclude Include="tdstype.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="functions.md" />
-    <None Include="models.md" />
-    <None Include="statements.md" />
+    <ClInclude Include="tdsmodels.h" />
+    <ClInclude Include="tdsdatatypes.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

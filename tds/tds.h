@@ -1,4 +1,5 @@
 #pragma once
 
-#include "tdstype.h"
+#include "tdsmodels.h"
 
+tdsAtomicModel * TDSAtomicModels = 0;

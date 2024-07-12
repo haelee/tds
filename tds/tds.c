@@ -1,4 +1,4 @@
-#include "tds.h"
+#include "sample.h"
 
 int main (void)
 {
