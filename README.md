@@ -1,1 +1,1 @@
-# tds
+# tds: a tiny (and fast) DEVS simulator
