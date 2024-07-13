@@ -3,18 +3,18 @@
 #include <stdint.h>
 #include <float.h>
 #include <stdbool.h>
-#include <malloc.h>
 
-typedef uint64_t tdsInteger;
-typedef double tdsReal;
-typedef tdsReal tdsTime;
-typedef void * tdsEvent;
+typedef uint64_t	tdsInteger;
+typedef double		tdsReal;
 
-typedef union _tdsStateVariable
+typedef union _tdsCommon
 {
-    tdsInteger Integer;
-    tdsReal Real;
+	tdsInteger	Integer;
+	tdsReal		Real;
 }
-tdsStateVariable;
+tdsCommon;
 
-#define tdsInfinite DBL_MAX;
+typedef tdsReal		tdsTime;
+typedef tdsCommon	tdsEvent;
+
+#define tdsTimeInfinite DBL_MAX;
