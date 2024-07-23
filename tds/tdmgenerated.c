@@ -1,0 +1,151 @@
+#include "tdm.h"
+#include "tdmgenerated.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+#define TDM_NUMBER_OF_STATE_VARIABLES 2
+
+static tdmDEVSModel TDMDEVSModels [TDM_NUMBER_OF_ATOMIC_MODELS + 1] = {0};
+
+// Array for storing state variables of all the atomic models
+static tdmCommon TDMStateVariables [TDM_NUMBER_OF_STATE_VARIABLES] = {0};
+
+///////////////////////////////////////////////////////////////////////////////
+// Atomic Model B
+// 0: SEND / 1: WAIT / 2: IDLE
+///////////////////////////////////////////////////////////////////////////////
+
+void TDM_A_Initialization (tdmDEVSModel * Model)
+{
+	Model -> StateVariables [0] . Integer = 0; // Model A's initial state is SEND.
+	printf ("Model A has been initialized.\n");
+}
+
+void TDM_A_ExternalTransition (tdmDEVSModel * Model, tdmTime ElapsedTime, tdmEvent ExternalEvent)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		default:
+			// Model A transitions to IDLE.
+			Model -> StateVariables [0] . Integer = 2;
+	}
+}
+
+void TDM_A_InternalTransition (tdmDEVSModel * Model)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		case 0:
+			// Model A transitions to WAIT.
+			Model -> StateVariables [0] . Integer = 1;
+			break;
+
+		default:
+		// Model A transitions to IDLE.
+			Model -> StateVariables [0] . Integer = 2;
+			break;
+	}
+}
+
+tdmEvent TDM_A_Output (tdmDEVSModel * Model)
+{
+	return (tdmEvent) {. Integer = 0};
+}
+
+tdmTime TDM_A_TimeAdvance (tdmDEVSModel * Model)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		case 0:
+			return 0.0;
+
+		case 1:
+			return 60.0;
+	}
+	return tdmTimeInfinite;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Atomic Model B
+// 0: REPLY / 1: IDLE
+///////////////////////////////////////////////////////////////////////////////
+
+void TDM_B_Initialization (tdmDEVSModel * Model)
+{
+	Model -> StateVariables [0] . Integer = 1;
+	printf ("Model B has been initialized.\n");
+}
+
+void TDM_B_ExternalTransition (tdmDEVSModel * Model, tdmTime ElapsedTime, tdmEvent ExternalEvent)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		default:
+			Model -> StateVariables [0] . Integer = 0;
+	}
+}
+
+void TDM_B_InternalTransition (tdmDEVSModel * Model)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		default:
+			Model -> StateVariables [0] . Integer = 1;
+			break;
+	}
+}
+
+tdmEvent TDM_B_Output (tdmDEVSModel * Model)
+{
+	return (tdmEvent) {. Integer = 0};
+}
+
+tdmTime TDM_B_TimeAdvance (tdmDEVSModel * Model)
+{
+	switch (Model -> StateVariables [0] . Integer)
+	{
+		case 0:
+			return rand () % 100;
+	}
+
+	return tdmTimeInfinite;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Model-dependent functions
+///////////////////////////////////////////////////////////////////////////////
+
+bool TDMInitializeModels (void)
+{
+	TDMDEVSModels [0] . StateVariables = TDMStateVariables;
+	TDMDEVSModels [0] . InitializationFunction = TDM_A_Initialization;
+	TDMDEVSModels [0] . ExternalTransitionFunction = TDM_A_ExternalTransition;
+	TDMDEVSModels [0] . InternalTransitionFunction = TDM_A_InternalTransition;
+	TDMDEVSModels [0] . OutputFunction = TDM_A_Output;
+	TDMDEVSModels [0] . TimeAdvanceFunction = TDM_A_TimeAdvance;
+
+	TDMDEVSModels [1] . StateVariables = TDMStateVariables + 1;
+	TDMDEVSModels [1] . InitializationFunction = TDM_B_Initialization;
+	TDMDEVSModels [1] . ExternalTransitionFunction = TDM_B_ExternalTransition;
+	TDMDEVSModels [1] . InternalTransitionFunction = TDM_B_InternalTransition;
+	TDMDEVSModels [1] . OutputFunction = TDM_B_Output;
+	TDMDEVSModels [1] . TimeAdvanceFunction = TDM_B_TimeAdvance;
+
+    TDMDEVSModels [2] . StateVariables = 0;
+
+	return true;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// Model-independent functions
+///////////////////////////////////////////////////////////////////////////////
+
+bool TDMFinalizeModels (void)
+{
+	return true;
+}
+
+tdmDEVSModel * TDMGetDEVSModels (void)
+{
+	return TDMDEVSModels;
+}
