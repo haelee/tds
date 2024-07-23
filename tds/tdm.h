@@ -42,7 +42,11 @@ typedef struct _tdmDEVSModel
 {
 	///////////////////////////////////////////////////////////////////////////
 	// Variables for defining an atomic model
+	///////////////////////////////////////////////////////////////////////////
+
+	//
 	tdmCommon *						StateVariables;
+
 	tdmInitializationFunction		InitializationFunction;
 	tdmExternalTransitionFunction	ExternalTransitionFunction;
 	tdmInternalTransitionFunction	InternalTransitionFunction;
@@ -51,12 +55,20 @@ typedef struct _tdmDEVSModel
 
 	///////////////////////////////////////////////////////////////////////////
 	// Variables for coupling
-	tdmDEVSModel **					OutputCouplings;
+	///////////////////////////////////////////////////////////////////////////
+
+	// Every output event would be delivered to the models that each element in OutputCouplings points out.
+	tdmDEVSModel ** OutputCouplings;
 
 	///////////////////////////////////////////////////////////////////////////
 	// Variables for simulation
-	tdmTime							LastEventTime;
-	tdmTime							NextEventTime;
+	///////////////////////////////////////////////////////////////////////////
+
+	// The time of the last event
+	tdmTime LastEventTime;
+
+	// The time of the next event
+	tdmTime NextEventTime;
 }
 tdmDEVSModel;
 
@@ -68,5 +80,5 @@ void			TDMInitializeModels	(void);
 // Finalize the models.
 void			TDMFinalizeModels	(void);
 
-// Return the starting address of the model array.
+// Return the start address of the model array.
 tdmDEVSModel *	TDMGetDEVSModels	(void);

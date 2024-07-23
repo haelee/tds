@@ -27,17 +27,23 @@ static tdmDEVSModel * TDM_A_Couplings [2] = {0};
 void TDM_A_Initialization (tdmDEVSModel * Model)
 {
 	Model -> StateVariables [0] . Integer = 0; // Model A's initial state is SEND.
-	printf ("Model A has been initialized.\n");
 }
 
 void TDM_A_ExternalTransition (tdmDEVSModel * Model, tdmTime ElapsedTime, tdmEvent ExternalEvent)
 {
-	switch (Model -> StateVariables [0] . Integer)
+	printf ("Recvd\n");
+
+	if (2 == Model -> StateVariables [0] . Integer)
 	{
-		default:
-			// Model A transitions to IDLE.
-			Model -> StateVariables [0] . Integer = 2;
+		printf ("Late reply\n");
 	}
+	else
+	{
+		printf ("Reply ont ime\n");
+	}
+
+	// Model A transitions to IDLE.
+	Model -> StateVariables [0] . Integer = 2;
 }
 
 void TDM_A_InternalTransition (tdmDEVSModel * Model)
@@ -50,7 +56,8 @@ void TDM_A_InternalTransition (tdmDEVSModel * Model)
 			break;
 
 		default:
-		// Model A transitions to IDLE.
+			printf ("No reply\n");
+			// Model A transitions to IDLE.			
 			Model -> StateVariables [0] . Integer = 2;
 			break;
 	}
@@ -84,7 +91,6 @@ static tdmDEVSModel * TDM_B_Couplings [2] = {0};
 void TDM_B_Initialization (tdmDEVSModel * Model)
 {
 	Model -> StateVariables [0] . Integer = 1;
-	printf ("Model B has been initialized.\n");
 }
 
 void TDM_B_ExternalTransition (tdmDEVSModel * Model, tdmTime ElapsedTime, tdmEvent ExternalEvent)
@@ -148,7 +154,7 @@ void TDMInitializeModels (void)
 
 	TDMDEVSModels [1] . OutputCouplings				= TDM_B_Couplings;
 	TDMDEVSModels [1] . OutputCouplings [0]			= TDMDEVSModels;
-	TDMDEVSModels [2] . OutputCouplings [1]			= 0;
+	TDMDEVSModels [1] . OutputCouplings [1]			= 0;
 
     TDMDEVSModels [2] . StateVariables				= 0;
 }
@@ -159,7 +165,6 @@ void TDMInitializeModels (void)
 
 void TDMFinalizeModels (void)
 {
-	// Do nothing.
 }
 
 tdmDEVSModel * TDMGetDEVSModels (void)
