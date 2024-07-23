@@ -1,3 +1,8 @@
+///////////////////////////////////////////////////////////////////////////////
+// tdm.h
+// Model-independent
+///////////////////////////////////////////////////////////////////////////////
+
 #pragma once
 
 #include <stdint.h>
@@ -17,7 +22,7 @@ tdmCommon;
 typedef tdmReal		tdmTime;
 typedef tdmCommon	tdmEvent;
 
-#define tdmTimeInfinite DBL_MAX;
+#define tdmTimeInfinite DBL_MAX
 
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -35,7 +40,8 @@ typedef tdmTime (* tdmTimeAdvanceFunction) (tdmDEVSModel *);
 
 typedef struct _tdmDEVSModel
 {
-	// Variables for an atomic model
+	///////////////////////////////////////////////////////////////////////////
+	// Variables for defining an atomic model
 	tdmCommon *						StateVariables;
 	tdmInitializationFunction		InitializationFunction;
 	tdmExternalTransitionFunction	ExternalTransitionFunction;
@@ -43,13 +49,24 @@ typedef struct _tdmDEVSModel
 	tdmOutputFunction				OutputFunction;
 	tdmTimeAdvanceFunction			TimeAdvanceFunction;
 
+	///////////////////////////////////////////////////////////////////////////
 	// Variables for coupling
 	tdmDEVSModel **					OutputCouplings;
+
+	///////////////////////////////////////////////////////////////////////////
+	// Variables for simulation
+	tdmTime							LastEventTime;
+	tdmTime							NextEventTime;
 }
 tdmDEVSModel;
 
 ///////////////////////////////////////////////////////////////////////////////
 
-bool			TDMInitializeModels	(void);
-bool			TDMFinalizeModels	(void);
+// Initialize the models.
+void			TDMInitializeModels	(void);
+
+// Finalize the models.
+void			TDMFinalizeModels	(void);
+
+// Return the starting address of the model array.
 tdmDEVSModel *	TDMGetDEVSModels	(void);

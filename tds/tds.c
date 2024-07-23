@@ -1,58 +1,98 @@
-// Simulation engine
-#include "tds.h"
-#include "tdmgenerated.h"
-
 ///////////////////////////////////////////////////////////////////////////////
-// Static variables
+// tds.s
+// Model-independent
 ///////////////////////////////////////////////////////////////////////////////
 
-static tdsDEVSSimulator	TDSDEVSSimulators [TDM_NUMBER_OF_ATOMIC_MODELS + 1] = {0};
+#include "tdm.h"
 
-tdsDEVSSimulator * TDSInitializeSimulation (tdmTime InitialTime)
+// Pointer to the model array
+static tdmDEVSModel * TDSDEVSModels = 0;
+
+void TDSInitializeSimulation (tdmTime InitialTime)
 {
-	tdmDEVSModel *		DEVSModel			= TDMGetDEVSModels ();
-	tdsDEVSSimulator *	DEVSSimulator		= TDSDEVSSimulators;
-	tdsDEVSSimulator *	ImminentSimulator	= DEVSSimulator;
+	tdmDEVSModel * DEVSModel = 0;
 
-	while (DEVSModel -> StateVariables)
+	TDSDEVSModels		= TDMGetDEVSModels ();
+	DEVSModel			= TDSDEVSModels;
+
+	// For each of the atomic models:
+	do
 	{
-		DEVSSimulator -> DEVSModel = DEVSModel;
+		// Call the initialization function of the model.
 		(* DEVSModel -> InitializationFunction) (DEVSModel);
 
-		DEVSSimulator -> LastEventTime = InitialTime;
-		DEVSSimulator -> NextEventTime = InitialTime + (* DEVSModel -> TimeAdvanceFunction) (DEVSModel);
+		// Set the time of the last event to the initial time.
+		DEVSModel -> LastEventTime = InitialTime;
 
-		if (DEVSSimulator -> NextEventTime < ImminentSimulator -> NextEventTime)
-		{
-			ImminentSimulator = DEVSSimulator;
-		}
-
-		++ DEVSModel;
-		++ DEVSSimulator;
-	};
-
-	DEVSSimulator -> DEVSModel		= 0;
-	DEVSSimulator -> NextEventTime	= tdmTimeInfinite;
-
-	return ImminentSimulator;
+		// Call the time advance function (ta) of the model.
+		// Update the time of the next event using the return value of the function.
+		DEVSModel -> NextEventTime = InitialTime + (* DEVSModel -> TimeAdvanceFunction) (DEVSModel);
+	}
+	while (++ DEVSModel -> StateVariables);
 }
 
-void TDSRun (tdmTime InitialTime)
+void TDSFinalizeSimulation (void)
 {
-//	tdsDEVSSimulator *	DEVSSimulator		= 0;
-	tdsDEVSSimulator *	ImminentSimulator	= 0;
-	tdmCommon			tdmEvent;
+}
 
-	ImminentSimulator = TDSInitializeSimulation (InitialTime);
+tdmDEVSModel * TDSGetImminentModel (void)
+{
+	tdmDEVSModel *	DEVSModel		= TDSDEVSModels;
+	tdmDEVSModel *	ImminentModel	= DEVSModel;
 
-	while (ImminentSimulator -> NextEventTime < tdmTimeInfinite)
+	while (++ DEVSModel -> StateVariables)
 	{
-		// The imminent model generates an output event.
-		tdmEvent = (* ImminentSimulator -> DEVSModel -> OutputFunction) (ImminentSimulator -> DEVSModel);
-
-		// The imminent model transitions internally.
-		(* ImminentSimulator -> DEVSModel -> InternalTransitionFunction) (ImminentSimulator -> DEVSModel);
+		if (DEVSModel -> NextEventTime < ImminentModel -> NextEventTime)
+		{
+			ImminentModel = DEVSModel;
+		}
 	}
+
+	return ImminentModel -> NextEventTime < tdmTimeInfinite ? ImminentModel : 0;
+}
+
+void TDSRun (tdmTime SimulationTime)
+{
+	tdmDEVSModel *	ImminentModel	= 0;
+	tdmDEVSModel **	Couplings		= 0;
+	tdmCommon		Event;
+
+	TDSInitializeSimulation (SimulationTime);
+
+	// If there exists an imminent model,
+	while ((ImminentModel = TDSGetImminentModel ()))
+	{
+		// Call the output function (lambda) of the imminet model.
+		Event = (* ImminentModel -> OutputFunction) (ImminentModel);
+
+		// Call the internal transition function (delta_int) of the model.
+		(* ImminentModel -> InternalTransitionFunction) (ImminentModel);
+
+		// Set the time of the last event to the current simulation time.
+		ImminentModel -> LastEventTime = SimulationTime;
+
+		// Call the time advance function (ta) of the model.
+		// Update the time of the next event using the return value of the function.
+		ImminentModel -> NextEventTime = SimulationTime + (* ImminentModel -> TimeAdvanceFunction) (ImminentModel);
+
+		Couplings = ImminentModel -> OutputCouplings;
+
+		// For each of the connecting model,
+		while (* Couplings)
+		{
+			// Call the external transition function (delta_ext) of the model.
+			(* (* Couplings) -> ExternalTransitionFunction) (* Couplings, SimulationTime - (* Couplings) -> LastEventTime, Event);
+
+			// Set the time of the last event to the current simulation time.
+			(* Couplings) -> LastEventTime = SimulationTime;
+
+			// Call the time advance function (ta) of the model.
+			// Update the time of the next event using the return value of the function.
+			(* Couplings) -> NextEventTime = SimulationTime + (* (* Couplings) -> TimeAdvanceFunction) (* Couplings);
+		}
+	}
+
+	TDSFinalizeSimulation ();
 }
 
 int main (void)

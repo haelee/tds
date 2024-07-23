@@ -1,19 +1,28 @@
+///////////////////////////////////////////////////////////////////////////////
+// tdmgenerated.c
+// Model-dependent
+///////////////////////////////////////////////////////////////////////////////
+
 #include "tdm.h"
-#include "tdmgenerated.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 
-#define TDM_NUMBER_OF_STATE_VARIABLES 2
+#define TDM_NUMBER_OF_ATOMIC_MODELS		2
+#define TDM_NUMBER_OF_STATE_VARIABLES	2
 
-static tdmDEVSModel TDMDEVSModels [TDM_NUMBER_OF_ATOMIC_MODELS + 1] = {0};
+// Model array
+static tdmDEVSModel TDMDEVSModels	[TDM_NUMBER_OF_ATOMIC_MODELS + 1]	= {0};
 
-// Array for storing state variables of all the atomic models
-static tdmCommon TDMStateVariables [TDM_NUMBER_OF_STATE_VARIABLES] = {0};
+// State variable array
+static tdmCommon TDMStateVariables	[TDM_NUMBER_OF_STATE_VARIABLES]		= {0};
 
 ///////////////////////////////////////////////////////////////////////////////
 // Atomic Model B
 // 0: SEND / 1: WAIT / 2: IDLE
 ///////////////////////////////////////////////////////////////////////////////
+
+static tdmDEVSModel * TDM_A_Couplings [2] = {0};
 
 void TDM_A_Initialization (tdmDEVSModel * Model)
 {
@@ -70,6 +79,8 @@ tdmTime TDM_A_TimeAdvance (tdmDEVSModel * Model)
 // 0: REPLY / 1: IDLE
 ///////////////////////////////////////////////////////////////////////////////
 
+static tdmDEVSModel * TDM_B_Couplings [2] = {0};
+
 void TDM_B_Initialization (tdmDEVSModel * Model)
 {
 	Model -> StateVariables [0] . Integer = 1;
@@ -115,34 +126,40 @@ tdmTime TDM_B_TimeAdvance (tdmDEVSModel * Model)
 // Model-dependent functions
 ///////////////////////////////////////////////////////////////////////////////
 
-bool TDMInitializeModels (void)
+void TDMInitializeModels (void)
 {
-	TDMDEVSModels [0] . StateVariables = TDMStateVariables;
-	TDMDEVSModels [0] . InitializationFunction = TDM_A_Initialization;
-	TDMDEVSModels [0] . ExternalTransitionFunction = TDM_A_ExternalTransition;
-	TDMDEVSModels [0] . InternalTransitionFunction = TDM_A_InternalTransition;
-	TDMDEVSModels [0] . OutputFunction = TDM_A_Output;
-	TDMDEVSModels [0] . TimeAdvanceFunction = TDM_A_TimeAdvance;
+	TDMDEVSModels [0] . StateVariables				= TDMStateVariables;
+	TDMDEVSModels [0] . InitializationFunction		= TDM_A_Initialization;
+	TDMDEVSModels [0] . ExternalTransitionFunction	= TDM_A_ExternalTransition;
+	TDMDEVSModels [0] . InternalTransitionFunction	= TDM_A_InternalTransition;
+	TDMDEVSModels [0] . OutputFunction				= TDM_A_Output;
+	TDMDEVSModels [0] . TimeAdvanceFunction			= TDM_A_TimeAdvance;
 
-	TDMDEVSModels [1] . StateVariables = TDMStateVariables + 1;
-	TDMDEVSModels [1] . InitializationFunction = TDM_B_Initialization;
-	TDMDEVSModels [1] . ExternalTransitionFunction = TDM_B_ExternalTransition;
-	TDMDEVSModels [1] . InternalTransitionFunction = TDM_B_InternalTransition;
-	TDMDEVSModels [1] . OutputFunction = TDM_B_Output;
-	TDMDEVSModels [1] . TimeAdvanceFunction = TDM_B_TimeAdvance;
+	TDMDEVSModels [0] . OutputCouplings				= TDM_A_Couplings;
+	TDMDEVSModels [0] . OutputCouplings [0]			= TDMDEVSModels + 1;
+	TDMDEVSModels [0] . OutputCouplings [1]			= 0;
 
-    TDMDEVSModels [2] . StateVariables = 0;
+	TDMDEVSModels [1] . StateVariables				= TDMStateVariables + 1;
+	TDMDEVSModels [1] . InitializationFunction		= TDM_B_Initialization;
+	TDMDEVSModels [1] . ExternalTransitionFunction	= TDM_B_ExternalTransition;
+	TDMDEVSModels [1] . InternalTransitionFunction	= TDM_B_InternalTransition;
+	TDMDEVSModels [1] . OutputFunction				= TDM_B_Output;
+	TDMDEVSModels [1] . TimeAdvanceFunction			= TDM_B_TimeAdvance;
 
-	return true;
+	TDMDEVSModels [1] . OutputCouplings				= TDM_B_Couplings;
+	TDMDEVSModels [1] . OutputCouplings [0]			= TDMDEVSModels;
+	TDMDEVSModels [2] . OutputCouplings [1]			= 0;
+
+    TDMDEVSModels [2] . StateVariables				= 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // Model-independent functions
 ///////////////////////////////////////////////////////////////////////////////
 
-bool TDMFinalizeModels (void)
+void TDMFinalizeModels (void)
 {
-	return true;
+	// Do nothing.
 }
 
 tdmDEVSModel * TDMGetDEVSModels (void)
